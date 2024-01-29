@@ -217,9 +217,9 @@ public enum Parser {
                         throw Error.duplicateEntry(id: entry0.id, context: context0)
                     }
                 } else if entry0.context != nil {
-                    return true
-                } else if entry1.context != nil {
                     return false
+                } else if entry1.context != nil {
+                    return true
                 } else {
                     throw Error.duplicateEntry(id: entry0.id, context: nil)
                 }

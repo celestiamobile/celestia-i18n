@@ -26,6 +26,11 @@ public enum Writer {
         public static let withoutOverwriting = Options(rawValue: 1 << 0)
     }
 
+    public static func updatePOTemplate(template: PO.Template, entries: [PO.Entry], options: Options = [], destination: URL) throws {
+        let newTemplate = PO.Template(comment: template.comment, header: template.header, entries: entries)
+        try _writePO(po: newTemplate, stringProvider: nil, options: options, destination: destination)
+    }
+
     public static func updatePO(po: PO, template: PO.Template, options: Options = [], destination: URL) throws {
         try _writePO(po: template, stringProvider: po, options: options, destination: destination)
     }

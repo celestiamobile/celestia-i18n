@@ -13,7 +13,7 @@ import PackageDescription
 
 let package = Package(
     name: "celestia-i18n",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v14)],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
     ],
@@ -27,6 +27,13 @@ let package = Package(
         ),
         .executableTarget(
             name: "UpdaterApp",
+            dependencies: [
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .target(name: "Core")
+            ]
+        ),
+        .executableTarget(
+            name: "ExtractorApp",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .target(name: "Core")

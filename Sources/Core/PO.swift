@@ -14,7 +14,7 @@ import Foundation
 public struct PO {
     // Representing an entry in PO file
     public struct Entry {
-        public struct Reference {
+        public struct Reference: Hashable {
             let sourceFilePath: String
             let lineNumber: Int?
         }
