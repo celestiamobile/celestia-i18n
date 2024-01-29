@@ -49,4 +49,8 @@ public struct PO {
     let entries: [Entry]
 }
 
-
+public extension PO {
+    func string(for id: String) -> String? {
+        return entries.first(where: { $0.id == id })?.string
+    }
+}

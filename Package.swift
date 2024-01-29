@@ -16,6 +16,7 @@ let package = Package(
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
+        .package(url: "https://github.com/gewill/SwiftyOpenCC", revision: "9b689cc4bd88fa7f703618387ed8512d83a0a0e7"),
     ],
     targets: [
         .executableTarget(
@@ -36,6 +37,14 @@ let package = Package(
             name: "ExtractorApp",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .target(name: "Core")
+            ]
+        ),
+        .executableTarget(
+            name: "TranslatorApp",
+            dependencies: [
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "OpenCC", package: "SwiftyOpenCC"),
                 .target(name: "Core")
             ]
         ),

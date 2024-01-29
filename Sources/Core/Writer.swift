@@ -31,6 +31,21 @@ public enum Writer {
         try _writePO(po: newTemplate, stringProvider: nil, options: options, destination: destination)
     }
 
+    public static func updatePO(po: PO, stringTransformer: (_ id: String, _ string: String) -> String, options: Options = [], destination: URL) throws {
+        let newPO = PO(comment: po.comment, header: po.header, entries: po.entries.map({ entry in
+            return PO.Entry(
+                translatorComments: entry.translatorComments,
+                extractedComments: entry.extractedComments,
+                references: entry.references,
+                flags: entry.flags,
+                id: entry.id,
+                string: stringTransformer(entry.id, entry.string),
+                context: entry.context
+            )
+        }))
+        try _writePO(po: newPO, stringProvider: nil, options: options, destination: destination)
+    }
+
     public static func updatePO(po: PO, template: PO.Template, options: Options = [], destination: URL) throws {
         try _writePO(po: template, stringProvider: po, options: options, destination: destination)
     }
