@@ -97,7 +97,7 @@ public enum Parser {
             var extractedComments: [String] = []
             var flags: PO.Entry.Flags = []
             var msgid: String?
-            var msgctx: String?
+            var msgctxt: String?
             var msgstr: String?
             var previousContentType: ContentType?
 
@@ -136,11 +136,11 @@ public enum Parser {
                             throw Error.contentTypeRedefined(type: "msgid")
                         }
                         msgid = content.content
-                    case .msgctx:
-                        if msgctx != nil {
-                            throw Error.contentTypeRedefined(type: "msgctx")
+                    case .msgctxt:
+                        if msgctxt != nil {
+                            throw Error.contentTypeRedefined(type: "msgctxt")
                         }
-                        msgctx = content.content
+                        msgctxt = content.content
                     case .msgstr:
                         if msgstr != nil {
                             throw Error.contentTypeRedefined(type: "msgstr")
@@ -160,8 +160,8 @@ public enum Parser {
                     switch previousContentType {
                     case .msgid:
                         msgid = (msgid ?? "").appending(additionalContent)
-                    case .msgctx:
-                        msgctx = (msgctx ?? "").appending(additionalContent)
+                    case .msgctxt:
+                        msgctxt = (msgctxt ?? "").appending(additionalContent)
                     case .msgstr:
                         msgstr = (msgstr ?? "").appending(additionalContent)
                     }
@@ -180,7 +180,7 @@ public enum Parser {
                 throw Error.contentTypeMissing(type: "msgstr")
             }
 
-            return PO.Entry(translatorComments: translatorComments, extractedComments: extractedComments, references: references, flags: flags, id: msgid, string: msgstr, context: msgctx)
+            return PO.Entry(translatorComments: translatorComments, extractedComments: extractedComments, references: references, flags: flags, id: msgid, string: msgstr, context: msgctxt)
         }
 
         // Header is the first entry
@@ -357,7 +357,7 @@ public enum Parser {
 
     enum ContentType: String {
         case msgid
-        case msgctx
+        case msgctxt
         case msgstr
     }
 
@@ -373,7 +373,7 @@ public enum Parser {
             Capture(as: typeRef) {
                 ChoiceOf {
                     "msgid"
-                    "msgctx"
+                    "msgctxt"
                     "msgstr"
                 }
             } transform: {

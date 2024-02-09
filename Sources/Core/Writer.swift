@@ -114,7 +114,7 @@ public enum Writer {
             }
 
             if let context = entry.context {
-                parts.append("msgctx \(formatContent(content: context, maxLineWidth: maxLineWidth))")
+                parts.append("msgctxt \(formatContent(content: context, maxLineWidth: maxLineWidth))")
             }
             parts.append("msgid \(formatContent(content: entry.id, maxLineWidth: maxLineWidth))")
             parts.append("msgstr \(formatContent(content: overrideString ?? entry.string, maxLineWidth: maxLineWidth))")
