@@ -91,7 +91,12 @@ public enum Parser {
         }
         let comment = commentLines.isEmpty ? nil : commentLines.joined(separator: "\n")
 
-        func getNextEntry() throws -> PO.Entry {
+        enum ParseResult {
+            case empty
+            case entry(entry: PO.Entry)
+        }
+
+        func getNextEntry() throws -> ParseResult {
             var references: [PO.Entry.Reference] = []
             var translatorComments: [String] = []
             var extractedComments: [String] = []
@@ -100,6 +105,7 @@ public enum Parser {
             var msgctxt: String?
             var msgstr: String?
             var previousContentType: ContentType?
+            var hasIgnoredContent = false
 
             while let currentLine = lines.first?.trimmingCharacters(in: .whitespaces) {
                 if currentLine.isEmpty {
@@ -124,6 +130,8 @@ public enum Parser {
                         flags.formUnion(flag)
                     case .references(let newRefs):
                         references.append(contentsOf: newRefs)
+                    case .ignored:
+                        hasIgnoredContent = true
                     }
                     lines.removeFirst()
                     continue
@@ -172,6 +180,10 @@ public enum Parser {
                 throw Error.unknownLine(line: currentLine)
             }
 
+            if msgid == nil, msgstr == nil, hasIgnoredContent {
+                return .empty
+            }
+
             guard let msgid else {
                 throw Error.contentTypeMissing(type: "msgid")
             }
@@ -180,24 +192,30 @@ public enum Parser {
                 throw Error.contentTypeMissing(type: "msgstr")
             }
 
-            return PO.Entry(translatorComments: translatorComments, extractedComments: extractedComments, references: references, flags: flags, id: msgid, string: msgstr, context: msgctxt)
+            return .entry(entry: PO.Entry(translatorComments: translatorComments, extractedComments: extractedComments, references: references, flags: flags, id: msgid, string: msgstr, context: msgctxt))
         }
 
         // Header is the first entry
-        let header = try getNextEntry()
+        guard case let .entry(header) = try getNextEntry() else {
+            throw Error.missingHeader
+        }
+
         guard header.id == "" else {
             throw Error.missingHeader
         }
 
         var entries = [PO.Entry]()
         while !lines.isEmpty {
-            let entry = try getNextEntry()
+            switch try getNextEntry() {
+            case .empty:
+                continue
+            case .entry(let entry):
+                if options.contains(.template), !entry.string.isEmpty {
+                    throw Error.nonEmptyStringInTemplate
+                }
 
-            if options.contains(.template), !entry.string.isEmpty {
-                throw Error.nonEmptyStringInTemplate
+                entries.append(entry)
             }
-
-            entries.append(entry)
         }
 
         try entries.sort { entry0, entry1 in
@@ -234,6 +252,7 @@ public enum Parser {
         case extractedComment(content: String)
         case flags(flag: PO.Entry.Flags)
         case references(references: [PO.Entry.Reference])
+        case ignored(content: String)
     }
 
     private static func parseComment(line: String) throws -> Comment? {
@@ -245,6 +264,7 @@ public enum Parser {
             case extractedComments = "."
             case references = ":"
             case flags = ","
+            case ignored = "~"
         }
 
         let entryCommentRegex = Regex {
@@ -255,13 +275,14 @@ public enum Parser {
                     "."
                     ":"
                     ","
+                    "~"
                 }
             } transform: {
                 TypeCharacter(rawValue: String($0))
             }
             ZeroOrMore(.whitespace)
             Capture(as: contentRef) {
-                OneOrMore(.any)
+                ZeroOrMore(.any)
             }
         }
 
@@ -273,12 +294,18 @@ public enum Parser {
 
             enum FlagCharacters: String {
                 case cFormat = "c-format"
+                case cppFormat = "c++-format"
+                case qtFormat = "qt-format"
                 case fuzzy = "fuzzy"
 
                 var flag: PO.Entry.Flags {
                     switch self {
                     case .cFormat:
                         return .cFormat
+                    case .cppFormat:
+                        return .cppFormat
+                    case .qtFormat:
+                        return .qtFormat
                     case .fuzzy:
                         return .fuzzy
                     }
@@ -307,6 +334,8 @@ public enum Parser {
                         Capture(as: flagRef) {
                             ChoiceOf {
                                 "c-format"
+                                "c++-format"
+                                "qt-format"
                                 "fuzzy"
                             }
                         } transform: {
@@ -349,6 +378,8 @@ public enum Parser {
                     }
                 }
                 return .references(references: references)
+            case .ignored:
+                return .ignored(content: String(content))
             }
         } else {
             return nil

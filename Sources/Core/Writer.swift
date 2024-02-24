@@ -66,6 +66,12 @@ public enum Writer {
                 if entry.flags.contains(.cFormat) {
                     flagParts.append("c-format")
                 }
+                if entry.flags.contains(.cppFormat) {
+                    flagParts.append("c++-format")
+                }
+                if entry.flags.contains(.qtFormat) {
+                    flagParts.append("qt-format")
+                }
                 if entry.flags.contains(.fuzzy) {
                     flagParts.append("fuzzy")
                 }

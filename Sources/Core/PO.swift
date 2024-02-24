@@ -28,6 +28,8 @@ public struct PO {
 
             public static let cFormat = Flags(rawValue: 1 << 0)
             public static let fuzzy = Flags(rawValue: 1 << 1)
+            public static let cppFormat = Flags(rawValue: 1 << 2)
+            public static let qtFormat = Flags(rawValue: 1 << 3)
         }
 
         let translatorComments: [String]
